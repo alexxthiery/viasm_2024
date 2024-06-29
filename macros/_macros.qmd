@@ -1,0 +1,117 @@
+::: {.content-hidden}
+$
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MATHCAL
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cC}{\mathcal{C}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cE}{\mathcal{E}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cH}{\mathcal{H}}
+\newcommand{\cL}{\mathcal{L}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cO}{\mathcal{O}}
+\newcommand{\cR}{\mathcal{R}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cU}{\mathcal{U}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cY}{\mathcal{Y}}
+\newcommand{\cZ}{\mathcal{Z}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MATHBB
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\bbN}{\mathbb{N}}
+\newcommand{\bbP}{\mathbb{P}}
+\newcommand{\bbQ}{\mathbb{Q}}
+\newcommand{\bbR}{\mathbb{R}}
+\newcommand{\bbX}{\mathbb{X}}
+\newcommand{\bbY}{\mathbb{Y}}
+\newcommand{\bbZ}{\mathbb{Z}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MATHBF
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\bfa}{\mathbf{a}}
+\newcommand{\bfb}{\mathbf{b}}
+\newcommand{\bfc}{\mathbf{c}}
+\newcommand{\bfd}{\mathbf{d}}
+\newcommand{\bfn}{\mathbf{n}}
+\newcommand{\bfm}{\mathbf{m}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% OPERATORS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareMathOperator{\ceil}[1]{\lceil #1 \rceil}
+\DeclareMathOperator{\floor}[1]{\lfloor #1 \rfloor}
+\DeclareMathOperator{\tr}{Tr}
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\var}{Var}
+\DeclareMathOperator{\cov}{Cov}
+\newcommand{\P}{\mathbb{P}}
+\DeclareMathOperator{\kl}{\mathrm{KL}}
+\DeclareMathOperator{\div}{\mathrm{div}}
+\DeclareMathOperator{\jac}{\mathrm{Jac}}
+\DeclareMathOperator{\hess}{\mathrm{Hess}}
+\DeclareMathOperator*{\argmax}{\mathrm{argmax}}
+\DeclareMathOperator*{\argmin}{\mathrm{argmin}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% BRACKETS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\bra}[1]{\left< #1 \right>}
+\newcommand{\BK}[1]{ {\left( #1 \right)} }
+\newcommand{\sqBK}[1]{ {\left[ #1 \right]} }
+\newcommand{\curBK}[1]{ {\left\{ #1 \right\}} }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% DISTRIBUTIONS // PROBA // STAT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\normal}{\mathcal{N}}
+\newcommand{\mle}{\mathrm{MLE}}
+\newcommand{\map}{\mathrm{MAP}}
+\newcommand{\data}{\mathrm{data}}
+\newcommand{\ref}{\mathrm{ref}}
+\newcommand{\obs}{\mathrm{obs}}
+\newcommand{\snr}{\mathrm{SNR}}
+\newcommand{\prior}{\mathrm{prior}}
+\newcommand{\post}{\mathrm{post}}
+\newcommand{\rev}{\mathrm{rev}}
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MATRIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\mat}[1]{\begin{matrix}#1\end{matrix}}
+\newcommand{\pmat}[1]{\left(\mat{#1}\right)} %Parentheses brackets
+\newcommand{\smat}[1]{\left[\mat{#1}\right]} %Square brackets
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% GREEK
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand\eps{\varepsilon}
+\renewcommand\epsilon{\varepsilon}
+\renewcommand\phi{\varphi}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% COLORS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\blue}{\color{blue}}
+\newcommand{\green}{\color{green}}
+\newcommand{\red}{\color{red}}
+\newcommand{\pink}{\color{pink}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MISCELLANEOUS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\and}{\textrm{and}}
+\newcommand{\with}{\textrm{with}}
+$
+:::

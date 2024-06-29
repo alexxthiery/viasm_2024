@@ -1,1 +1,1 @@
-# viasm_2024
+# Material for VIASM 2024 Summer School on Machine Learning
