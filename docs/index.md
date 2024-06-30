@@ -1,7 +1,7 @@
 ---
 title: "Diffusions & Flows"
-subtitle: "VIASM Summer school on Statistics & Machine Learning"
-author: "Alex Thiery <br /> National University of Singapore <br /> Dpt. Statistics & Data Sciences"
+subtitle: "VIASM Summer school<br /> Statistics & Machine Learning"
+author: "Alex Thiery <br /> National University of Singapore <br /> Dpt. Statistics & Data Sciences <br /> <br /> <br /> <br /> Summer 2024 <br /> Hanoi"
 output: revealjs
 date: ""
 format:
@@ -15,13 +15,24 @@ format:
     pdf-max-pages-per-slide: 1
   html:
     embed-resources: true
+    css: style.css
 css: style.css
-
 ---
-
 
 [//]: # INCLUDE LATEX MACROS
 {{< include /macros/_macros.qmd >}}
+
+
+---
+
+<div style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column;">
+  <p>Slides & Code</p>
+  <img src="./data/slides_url.png"
+  style="width: 40%;">
+  <p>[https://github.com/alexxthiery/viasm_2024](https://github.com/alexxthiery/viasm_2024)</p>
+</div>
+
+---
 
 ## PhD scholarships available....
 
@@ -32,13 +43,6 @@ css: style.css
 
 ![](./data/nus-campus.png){.absolute bottom=0% left=10% width="80%"}
 
----
-
-### SASEAF Fellowship
-
-* The **SG Academies South-East Asia Fellowship (SASEAF)** Programme aims to attract bright postgraduate researchers from South-East Asia to Singapore research institutions for a 2-year long fellowship.
-
-![](./data/SASEAF.png){.absolute bottom=0% left=15% width="70%"}
 
 
 ---
