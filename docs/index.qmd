@@ -13,6 +13,7 @@ format:
     chalkboard: False
     fig-cap-location: bottom
     pdf-max-pages-per-slide: 1
+    width: 1000
   html:
     embed-resources: true
     css: style.css
@@ -25,12 +26,14 @@ css: style.css
 
 ---
 
-<div style="display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column;">
-  <p>Slides & Code</p>
-  <img src="./data/slides_url.png"
-  style="width: 40%;">
-  <p>[https://github.com/alexxthiery/viasm_2024](https://github.com/alexxthiery/viasm_2024)</p>
-</div>
+::: {style="text-align:center;"}
+Slides and Code:
+
+![](./data/slides_url.png){width=500}
+
+[https://github.com/alexxthiery/viasm_2024](https://github.com/alexxthiery/viasm_2024)
+:::
+
 
 ---
 
@@ -119,6 +122,12 @@ $$
 * What rate of convergence? Better discretization schemes?
 
 ![](./data/euler_convergence.png){.absolute left="25%" width="50%"}
+
+---
+
+::: {style="text-align:center;"}
+![some caption](./data/euler_convergence.png){width=500}
+:::
 
 ---
 
@@ -548,10 +557,7 @@ $$
 * The quantity $\color{blue}{ (\cL F)(t,X_t)}$ is called the <span style='color:blue'>Generator of the diffusion:</span>
 
 $$
-\begin{aligned}
-\cL F(t,x) &\quad = \quad \mu(t,x) \, F'(x) \quad + \quad \frac{\sigma^2}{2} \, F''(x)\\
-\cL F(t,x) &\quad = \quad \mu(t,x) \, \nabla F(x) \quad + \quad \frac{\sigma^2}{2} \, \Delta F(x)
-\end{aligned}
+\cL F(t,x) \; = \; \mu(t,x) \, \nabla F(x) \quad + \quad \frac{\sigma^2}{2} \, \Delta F(x)
 $$
 
 * Slightly more rigorously, we have
@@ -721,14 +727,12 @@ $$
 
 ---
 
-### Log Sobolev Inequalities (LSI)
+#### Log Sobolev Inequalities (LSI)
 
 $$
 \kl(\rho, \pi) \leq \color{red}{ \tau}
 \int \rho(x) \, \left\| \nabla \log \frac{\rho(x)}{\pi(x)}\right\|^2 \, dx
 $$
-
-* if the ratio $\frac{\rho(x)}{\pi(x)} \approx \textrm{const}$ then distributions $\rho(dx)$ and $\pi(dx)$ are close to each other
 
 * **Log-Concavity**: if $\color{blue}{-\hess\BK{ \log \pi } \geq \epsilon I}$ then a LSI holds
 
@@ -740,7 +744,7 @@ $$
 
 * the concept of LSI was created by [Leonard Gross in 1975](https://en.wikipedia.org/wiki/Leonard_Gross)
 
-![](./data/leonard_gross.jpg){.absolute bottom=0% height=40% right=0%}
+![](./data/leonard_gross.jpg){.absolute bottom=0% width=20% right=40%}
 
 ---
 
@@ -792,10 +796,9 @@ $$
 
 * Still a an active [area of research](https://github.com/janosh/awesome-normalizing-flows)
 
-* Animation below by [Eric Jang](https://blog.evjang.com/2019/07/likelihood-model-tips.html)
-
-![](./data/normalizing_flow.gif){.absolute bottom=0% left=25% width="50%"}
-
+::: {style="text-align:center;"}
+![Animation below by Eric Jang](./data/normalizing_flow.gif){width=600}
+:::
 ---
 
 #### Fitting a normalizing flow model
@@ -851,18 +854,19 @@ started from a reference distribution $X_0 \sim \pi_{\text{ref}}(dx)$ generates 
   * choice of neural network architectures
   * advanced discretization of the diffusion processes
 
-  ![](./data/denoising_diffusion_trend.jpg){.absolute bottom=0% left=33% width="40%"}
-
+::: {style="text-align:center;"}
+![Google Trend: "Denoising Diffusion"](./data/denoising_diffusion_trend.jpg){width=400}
+:::
 
 ---
 
-* Conditional generation:
+* Conditional generation with ChatGPT:
 
 ![](./data/conditional_VIASM.jpg){.absolute bottom=0% left=25% width="50%"}
 
 ---
 
-### Denoising Diffusion Probabilistic Models
+#### Denoising Diffusion Probabilistic Models (DDPM)
 
 * $N$ samples $\cD \equiv \{x_i\}_{i=1}^N$ in $\bbR^D$ from an unknown data distribution $\pi_{\data}(dx)$
 
@@ -874,7 +878,7 @@ started from a reference distribution $X_0 \sim \pi_{\text{ref}}(dx)$ generates 
 
 * We would like to build the <span style='color:blue'>reverse diffusion</span>!
 
-![](./data/reverse_cropped.gif){.absolute bottom=0% height=45% left=20%}
+![](./data/reverse_cropped.gif){.absolute bottom=0% width=50% left=25%}
 
 
 ---
