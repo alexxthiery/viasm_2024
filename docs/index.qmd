@@ -78,7 +78,6 @@ Slides and Code:
 
 * This course will focus a lot on intuition and heuristics
 * This course will **not** be rigorous -- many good books for this!
-* Instead, emphasis on intuition and heuristics
 
 ![](./data/book_oksendal.png){.absolute bottom=0% left=5% height="60%"}
 ![](./data/book_eric.png){.absolute bottom=0% right=5% height="60%"}
@@ -122,12 +121,6 @@ $$
 * What rate of convergence? Better discretization schemes?
 
 ![](./data/euler_convergence.png){.absolute left="25%" width="50%"}
-
----
-
-::: {style="text-align:center;"}
-![some caption](./data/euler_convergence.png){width=500}
-:::
 
 ---
 
@@ -356,16 +349,16 @@ $$
 
 * Consider a diffusion $\blue{dX_t = \mu(t, X_t) \, dt + \sigma \, dW}$
 
-* It is often useful to accelerate/decelerate the diffusion by a factor $\alpha \geq 0$,
+* It is often useful to accelerate/decelerate the diffusion by a factor $\red{\alpha \geq 0}$,
 
 $$
-X^{\alpha}_t \equiv X_{\alpha t}
+X^{\red{\alpha}}_t \equiv X_{ \red{\alpha} t}
 $$
 
 * The accelerated process satisfies
 
 $$
-dX^{\alpha}_t = \red{\alpha} \, \mu(t, X^{\alpha}_t) \, dt + \red{\sqrt{\alpha}} \, \sigma \, dW
+dX^{\alpha }_t = \red{\alpha} \, \mu(t, X^{\alpha}_t) \, dt + \red{\sqrt{\alpha}} \, \sigma \, dW
 $$
 
 * Different flavours of Langevin diffusions: they are all the same...
@@ -420,7 +413,7 @@ $$\color{red}{\pi_{\text{post}}(x)}
 
 $$\E_{\color{red}{\pi_{\text{post}}}}[\phi(X)]$$
 
-* Because $\nabla \log \color{red}{\pi_{\text{post}}} = \nabla \log \color{blue}{\bar{\pi}}$, one can simulate the Langevin diffusion
+* Because $\nabla \log \color{red}{\pi_{\text{post}}(x)} = \nabla \log \color{blue}{\bar{\pi}(x)}$, the Langevin diffusion reads:
 
 $$
 dX_t \; = \; \frac{1}{2} \nabla \log \color{blue}{\bar{\pi}(X_t)} \, dt + dW
@@ -539,10 +532,10 @@ $$\color{blue}{dX_t = \mu(t,X_t)\, dt + \sigma \, dW}.$$
 
 ---
 
-### $2$nd order Taylor expansion is all you need!
+### $2$nd order Taylor expansion...
 
-* <span style='color:blue'>Heuristic:</span> "$(dW)^2 = dt$ and drop all terms of size smaller tham $dt$"
-* Consider a smooth function $F: \bbR^d \to \bbR$ and a diffusion $\color{blue}{dX_t = \mu(t,X_t)\, dt + \sigma \, dW}$:
+* <span style='color:blue'>**Heuristic:**</span> "$(dW)^2 = dt$ and drop all terms of size smaller tham $dt$"
+* Let $F: \bbR^d \to \bbR$ and a diffusion $\color{blue}{dX_t = \mu(t,X_t)\, dt + \sigma \, dW}$:
 
 $$
 F(X_{t+\delta}) 
@@ -557,10 +550,10 @@ $$
 * The quantity $\color{blue}{ (\cL F)(t,X_t)}$ is called the <span style='color:blue'>Generator of the diffusion:</span>
 
 $$
-\cL F(t,x) \; = \; \mu(t,x) \, \nabla F(x) \quad + \quad \frac{\sigma^2}{2} \, \Delta F(x)
+\cL F(t,x) \; = \; \mu(t,x) \, \nabla F(x) \; + \; \frac{\sigma^2}{2} \, \Delta F(x)
 $$
 
-* Slightly more rigorously, we have
+* Slightly more rigorously, we have:
 
 $$
 \E[F(X_{t+\delta}) \, | \, X_t = x]
@@ -571,12 +564,11 @@ $$
 
 ---
 
-#### Fokker-Planck Equation
+### Fokker-Planck Equation
 
 * $\color{blue}{dX_t = \mu(t,X_t)\, dt + \sigma \, dW}$ with $X_0 \sim \pi_0(dx)$: how to describe $\pi_t(dx)$ ?
 
 * <span style='color:blue'>Ingredient:</span> Test function + Taylor expansion + Integration by part
-* For a test function $\phi: \bbR^d \to \bbR$
 
 $$
 \begin{aligned}
@@ -610,7 +602,7 @@ $$
 $$
 with initial distribution $X_0 \sim \pi_0(dx)$
 
-* The density evolves according to the transport/continuity PDE:
+* The density evolves according to the [transport/continuity PDE](https://en.wikipedia.org/wiki/Continuity_equation):
 $$
 \partial_t \pi_t \; = \; - \nabla \cdot (\mu \, \pi_t)
 $$
@@ -750,13 +742,18 @@ $$
 
 ### Generative Model: Goals
 
-* Given a large set of samples $\{ x_i \}_{i=1}^N \subset \bbR^D$, <span style='color:blue'>generate</span> "similar looking" samples?
+* Given a large set of samples $\{ x_i \}_{i=1}^N \subset \bbR^D$
+* <span style='color:blue'>generate</span> "similar looking" samples?
 * Fit a probabilistic model to it:
 
 $$
 q_{\lambda}(dx) \; \approx \; \pi_{\data}(dx) \approx \frac{1}{N} \sum_{i=1}^N \delta_{x_i}(dx)
 $$
 
+* **Challenge**:
+  * the family $q_{\lambda}(dx)$ should be flexible enough to capture the data distribution
+  * we should be able to sample from $q_{\lambda}(dx)$
+  * bonus: ability to compute likelihoods
 ---
 
 #### Why would we want to do this?
@@ -772,19 +769,24 @@ $$
 
 #### Generative modeling: normalizing flow methods
 
-* Distribution $q_\lambda$ is obtained by applying a differentiable transformation $T_\lambda$ to a simple reference distribution $\pi_{\text{ref}}$. The reference distribution is often chosen as a standard Gaussian distribution $\pi_{\text{ref}} = \normal(0,I)$.
+* Distribution $q_\lambda(dx)$ is obtained by applying a differentiable transformation $T_\lambda: \mathbb{R}^D \to \mathbb{R}^D$ to a simple reference distribution $\pi_{\text{ref}}$.
+* The reference distribution is often chosen as a standard Gaussian distribution $\pi_{\text{ref}} = \normal(0,I)$.
 
-* Generating $\blue{X \sim q_\lambda}(dx)$ is equivalent to generating $\green{Z \sim \pi_{\text{ref}}(dz)}$ and applying $T_\lambda$:
+* Sample $\blue{X \sim q_\lambda}(dx)$ by generating $\green{Z \sim \pi_{\text{ref}}(dz)}$ and applying $T_\lambda$:
 
 $$
-\blue{X} = T_\lambda(\green{Z})
+\begin{aligned}
+\blue{X} \; &= \; T_\lambda(\green{Z}) \\
+\blue{q_{\lambda}} \; &= \; (T_{\lambda} )_{\sharp} ( \green{\pi_{\text{ref}}} )
+\end{aligned}
 $$
 
-* Change of variables formula gives the density of $q_\lambda(dx)$:
+* For $\blue{x} = T_\lambda(\green{z})$, we have:
+
 $$
 q_\lambda(\blue{x}) = \pi_{\text{ref}}(\green{z}) \, \times \, \left| \text{Jac}(T_\lambda)(\green{z}) \right|^{-1}
 $$
-where $\blue{x} = T_\lambda(\green{z})$.
+
 
 ---
 
@@ -806,7 +808,7 @@ $$
 \blue{ q_\lambda(x) = \pi_{\text{ref}}(z) \, \times \, \left| \text{Jac}(T_\lambda)(z) \right|^{-1} }
 $$
 
-* Can be fitted to data $\{x_i\}_{i=1}^N$ by MLE:
+* Can be fitted to data $\{x_i\}_{i=1}^N$ with MLE:
 
 $$
 \lambda_{\textrm{MLE}} \; = \; 
@@ -822,10 +824,10 @@ $$
 
 
 * **Questions:**
-  * <span style='color:blue'>How to design $T_\lambda$ so that the family of distributions $\{ q_\lambda \}_{\lambda \in \Lambda}$ is expressive?</span>
-  * How to make sure that $T_\lambda$ is invertible?
-  * How to make sure that the inverse of $T_\lambda$ is easy to compute?
-  * How to make sure that the Jacobian is easy to compute?
+  * <span style='color:blue'>How to design $T_\lambda$ so that the family $\{ q_\lambda \}_{\lambda \in \Lambda}$ is expressive enough?</span>
+  * How to ensure that $T_\lambda$ is invertible?
+  * How to ensure that the inverse of $T_\lambda$ is easy to compute?
+  * How to ensure that the Jacobian is easy to compute?
 
 
 
@@ -834,7 +836,7 @@ $$
 #### Generative modeling: denoising diffusion
 
 * It is difficult to design a family of transformations $T_\lambda$ that are expressive, invertible, have easy-to-compute Jacobians and inverses
-* Instead, try to design an appropriate drift function $\mu(t,x)$ so that the diffusion
+* Instead, design an appropriate drift function $\mu(t,x)$ so that the diffusion
 $$dX = \mu(t,X) \, dt + \sigma \, dW$$
 started from a reference distribution $X_0 \sim \pi_{\text{ref}}(dx)$ generates samples from the data distribution at time $T$.
 
@@ -843,16 +845,14 @@ started from a reference distribution $X_0 \sim \pi_{\text{ref}}(dx)$ generates 
 ---
 
 * we will only be scratching the surface of the topic
-* active area of research with a [many of recent developments](https://github.com/diff-usion/Awesome-Diffusion-Models)
-* this course: emphasis on the big picture and heuristic derivations  
-
+* active area of research with [many recent developments](https://github.com/diff-usion/Awesome-Diffusion-Models)
 
 
 * **Things not discussed**:
   * engineering tricks to scale up the computations
   * theoretical guarantees
   * choice of neural network architectures
-  * advanced discretization of the diffusion processes
+  * discretization schemes of the diffusion processes
 
 ::: {style="text-align:center;"}
 ![Google Trend: "Denoising Diffusion"](./data/denoising_diffusion_trend.jpg){width=400}
@@ -941,18 +941,18 @@ $$
 \partial_t p_t \; = \; -\nabla \cdot \curBK{ \mu \, p_t } + \frac{\sigma^2}{2} \, \Delta p_t
 $$
 
-* Obtain the Fokker-Planck equation $\blue{ \widetilde{p}_t(x) \equiv p_{T-t}(x) }$
+* Obtain the Fokker-Planck equation for $\blue{ \widetilde{p}_t(x) \equiv p_{T-t}(x) }$:
 
 $$
 \partial_t \blue{\widetilde{p}_t} \; = \; -\nabla \cdot \curBK{ \red{\widetilde{\mu}} \, \blue{\widetilde{p}_t} } + \frac{\sigma^2}{2} \, \Delta \blue{\widetilde{p}_t}
 $$
-with the new drift $\widetilde{\mu} = -\mu + \sigma^2 \, \nabla \log p_{T-t}$.
+with the new drift $\red{\widetilde{\mu} = -\mu + \sigma^2 \, \nabla \log p_{T-t}}$.
 
 * **Remark:** it is quite far from a proof since this only describes the marginals
 
 ---
 
-#### Reverse diffusion: almost a proof
+### Almost a proof..
 
 * Let's try to understand the backward transition $p(x_t \mid x_{t + \delta})$ for $\delta \ll 1$:
 
@@ -974,7 +974,7 @@ $$
 
 ---
 
-* Original [proof](https://doi.org/10.1016/0304-4149(82)90051-5) by Brian Anderson in 1982
+* Original rigorous [proof](https://doi.org/10.1016/0304-4149(82)90051-5) by Brian Anderson in 1982
 
 ![](./data/reverse_proof.jpg){.absolute bottom=0% width=90% left=5%}
 
@@ -1056,24 +1056,46 @@ $$
 
 * We need to build an approximation of the score,
 
-$$\cS(t,x) \; \approx \; \nabla_x \log p_t(x).$$
+$$\cS(t,x) \; = \; \nabla_x \log p_t(x).$$
 
 * $\cS(t,x)$ is often parametrized by a **neural network**, although any parametric function approximator can be used
 
-* The transition probabilities of a OU process are tractable. We have
+* The score can be expressed as:
 $$
-\log p_t(x) = \log \int \; \P(X_t \in dx \, | \, X_0 = x_0) \; \pi_{\data}(d x_0)
+\nabla \log p_t(x) = \nabla \log \int \; \P(X_t \in dx \, | \, X_0 = x_0) \; \pi_{\data}(d x_0)
 $$
+
 
 ---
 
-### From sampling to denoising
+* Denoising diffusion models fundamentally rely on the fact that the transition probabilities of the noising OU process are tractable
+$$
+\P(X_t \in dx \, | \, X_0 = x_0) \; = \; \frac{1}{\cZ_t} \exp\curBK{-\frac{(x - \alpha_t \, x_0)^2}{2 \sigma_t^2}}
+$$
+so that the score can be expressed as
+$$
+\cS(t,x)  = \nabla \log \int  \exp\curBK{-\frac{(x - \alpha_t \, x_0)^2}{2 \sigma_t^2}}
+\; \pi_{\data}(d x_0)
+$$
 
-* The tractability of the noising OU process allows us to write the score as
+* From algebra it follows:
 $$
-\nabla_x \log p_t(x) \; = \; -\frac{x - \alpha_t \, \red{\widehat{x}_0(t,x)} }{\sigma_t^2}
+\cS(t,x) \; = \; - \frac{ \int \blue{ \frac{(x - \alpha_t \, x_0)}{\sigma_t^2} } \, p(X_t=x, X_0=x_0) \, dx_0}{\int  p(X_t=x, X_0=x_0) \, dx_0}
 $$
-where $\widehat{x}_0(t,x)$ is a "denoising" estimate of the initial position $x_0$ given a noisy estimate $X_t=x$ at time $t$:
+* One can recognize a <span style='color:blue'>**conditional expectation**</span>:
+
+$$
+\cS(t,x) \; = \; -\E\sqBK{  \frac{(x - \alpha_t \, X_0)}{\sigma_t^2} \mid X_t=x}
+$$
+---
+
+### Building a sampler from a denoiser
+
+* The score can be expressed as:
+$$
+\cS(t,x) \; = \; \nabla_x \log p_t(x) \; = \; -\frac{x - \alpha_t \, \red{\widehat{x}_0(t,x)} }{\sigma_t^2}
+$$
+where $\red{\widehat{x}_0(t,x)}$ is a "denoising" estimate of $x_0$ given $X_t=x$:
 $$
 \red{ \widehat{x}_0(t,x) \; = \; \E[X_0  \; \mid \; X_t = x].}
 $$
@@ -1085,7 +1107,8 @@ $$
 \widehat{x}_0(\cdots): [0,T] \times \bbR^d \to \bbR^d.
 $$
 
-* Building $\widehat{x}_0(t,x)$ is a "simple" <span style='color:blue'>regression problem</span>. In summary, we have transformed the problem of generating samples into a regression problem!
+* Building $\widehat{x}_0(t,x)$ is a "simple" <span style='color:blue'>regression problem</span>.
+* Important take away: <span style='color:blue'>one can build a sampler out of a denoiser!</span>
 
 ---
 
@@ -1116,11 +1139,13 @@ x_0 \sim \pi_{\data}(dx)
 x_t = \alpha_t \, x_0 + \sigma_t \, \bfn
 $$
 
-* Parametrize $\widehat{x}_0(t,x)$ with a neural-net with <span style='color:red'>weight $\omega$</span> and minimize:
+* Parametrize $\widehat{x}_0(t,x)$ with a neural-net with <span style='color:red'>parameter $\theta$</span> and minimize
 
 $$
-\cL( \red{\omega} ) \equiv \E \curBK{ \left\| X_0 - \widehat{x}_0(\tau, X_{\tau}) \right\|^2}
+\cL( \red{\theta} ) \equiv \E \curBK{ \int_{t=0}^T \, \lambda(t) \, \left\| X_0 - \widehat{x}_0(\tau, X_{t}) \right\|^2 \, dt}
 $$
+
+for some weighting function $\lambda(t)$.
 
 
 
@@ -1167,13 +1192,13 @@ $$
 * Diffusion $\blue{dX = \mu(t,X) \, dt + dB}$ with marginal $X_t \sim p_t$
 
 $$
-\partial_t p_t = -\nabla( p_t \, \mu) + \frac12 \, \Delta p_t
+\partial_t p_t = -\nabla \cdot (\mu \, p_t) + \frac12 \, \Delta p_t
 $$
 
 * Differential Equation $\blue{dX^{\textrm{ODE}}_t = F(t,X^{\textrm{ODE}}_t) \, dt}$ with marginal $X^{\textrm{ODE}}_t \sim p^{\textrm{ODE}}_t$
 
 $$
-\partial_t p^{\textrm{ODE}}_t = -\nabla( p^{\textrm{ODE}}_t \, F).
+\partial_t p^{\textrm{ODE}}_t = -\nabla \cdot ( F \, p^{\textrm{ODE}}_t).
 $$
 
 * Can one find a vector field $F(t,x)$ such that
@@ -1193,11 +1218,13 @@ $$
 
 ### ODE-Diffusion trick: illustration
 
-* Brownian motion dynamics: $$\blue{dX = dW}$$
+* Brownian motion dynamics: 
 
-* ODE with same marginals
+$$$\blue{dX = dW}$$
 
-$$\red{dX^{\text{ODE}}_t = \frac12 \, \frac{X^{\text{ODE}}_t}{2} \, dt}$$
+* ODE with same marginals:
+
+$$\red{dX^{\text{ODE}}_t = \frac12 \, \frac{X^{\text{ODE}}_t}{t} \, dt}$$
 
 ![](./data/ODE_trick.png){.absolute bottom=0% height=40% left=15%}
 
@@ -1241,6 +1268,26 @@ $$\blue{dX^{\rev}_s = \frac12 \, X^{\rev}_s \, ds \; + \red{\frac12} \, \nabla \
 
 ---
 
+### Likelihood estimates
+
+* We have seen how to generate samples from the data distribution
+* How to estimate the likelihood of a new sample $x$?
+* More generally, given an ODE 
+$$
+dX_t = F(t,X_t) \, dt
+$$
+starting from an initial distribution $p_0(dx)$, how can one compute $p_T(x)$?
+* The Chain-Rule and the Fokker-Planck equation gives
+
+$$
+\log p_T(x_T)
+\; = \;
+\log p_0(x_0) \; - \; \int_0^T \nabla \cdot F(t,x_t) \, dt
+$$
+
+* **caveat:** in high-dimensions, the divergence term can expensive to compute...
+
+---
 
 ### Bayesian Inverse Problems
 
