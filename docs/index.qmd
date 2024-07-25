@@ -52,7 +52,7 @@ Slides and Code:
 ## Course objectives
 
 1. What are flows and diffusion models?
-2. How to do basic manipulations with these models?
+2. How to derive and do basic manipulations with these models?
 3. How to leverage these models for generative modeling?
 4. How to use these models for statistical inference?
 
@@ -860,12 +860,6 @@ started from a reference distribution $X_0 \sim \pi_{\text{ref}}(dx)$ generates 
 
 ---
 
-* Conditional generation with ChatGPT:
-
-![](./data/conditional_VIASM.jpg){.absolute bottom=0% left=25% width="50%"}
-
----
-
 #### Denoising Diffusion Probabilistic Models (DDPM)
 
 * $N$ samples $\cD \equiv \{x_i\}_{i=1}^N$ in $\bbR^D$ from an unknown data distribution $\pi_{\data}(dx)$
@@ -1066,22 +1060,16 @@ $$\cS(t,x) \; \approx \; \nabla_x \log p_t(x).$$
 
 * $\cS(t,x)$ is often parametrized by a **neural network**, although any parametric function approximator can be used
 
-* Since the transition probabilities of OU are tractable, we have
+* The transition probabilities of a OU process are tractable. We have
 $$
-\begin{align}
-\log p_t(x) &= \log \int \; F_{\text{OU}}(t, x_0, x)\; \pi_{\data}(d x_0)\\
-&\qquad \textrm{ }\\
-&\qquad \textrm{where}\\
-&\qquad \textrm{ }\\
-F_{\text{OU}}(t, x_0, x) &= \P(X_t \in dx \, | \, X_0 = x_0)
-\end{align}
+\log p_t(x) = \log \int \; \P(X_t \in dx \, | \, X_0 = x_0) \; \pi_{\data}(d x_0)
 $$
 
 ---
 
 ### From sampling to denoising
 
-* Since $F(t, x_0, x)$ is tractable, algebra gives
+* The tractability of the noising OU process allows us to write the score as
 $$
 \nabla_x \log p_t(x) \; = \; -\frac{x - \alpha_t \, \red{\widehat{x}_0(t,x)} }{\sigma_t^2}
 $$
