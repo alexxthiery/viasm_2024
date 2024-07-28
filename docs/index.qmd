@@ -82,6 +82,7 @@ Slides and Code:
 ![](./data/book_oksendal.png){.absolute bottom=0% left=5% height="60%"}
 ![](./data/book_eric.png){.absolute bottom=0% right=5% height="60%"}
 
+
 ---
 
 ### Ordinary Differential Equation (ODE)
@@ -738,6 +739,7 @@ $$
 
 ![](./data/leonard_gross.jpg){.absolute bottom=0% width=20% right=40%}
 
+
 ---
 
 ### Generative Model: Goals
@@ -856,7 +858,7 @@ X_0 \sim \pi_{\text{ref}}(dx)
 $$
 
 ::: {style="text-align:center;"}
-![](./data/neural_ODE_field.jpg){height=300}
+![](./data/neural_ODE_field.jpg){height=250}
 :::
 
 ---
@@ -880,7 +882,7 @@ $$
 * This is too <span style='color:blue'>slow</span> for large datasets, although the idea is very appealing!
 
 ::: {style="text-align:center;"}
-![](./data/neural_ODE_results.jpg){height=300}
+![](./data/neural_ODE_results.jpg){height=250}
 :::
 
 
@@ -899,11 +901,11 @@ started from a reference distribution $X_0 \sim \pi_{\text{ref}}(dx)$ generates 
 ---
 
 ::: {style="text-align:center;"}
-![](./data/deep_unsupervised.jpg){width=1000}
+![](./data/deep_unsupervised.jpg){width=800}
 :::
 
 ::: {style="text-align:center;"}
-![](./data/deep_unsupervised_examples.jpg){width=1000}
+![](./data/deep_unsupervised_examples.jpg){width=800}
 :::
 
 
@@ -956,17 +958,19 @@ $$
 X_{t+s} | (X_t=x_t) \; \stackrel{\mathcal{L}}{=} \;\alpha_s x_t + \sigma_s \, \bfn \qquad \text{with} \qquad
 \left\{
 \begin{aligned}
-\alpha_s &= \sqrt{1-\sigma_s^2}\\
-\sigma^2_s &= 1-e^{-s}
+\alpha_s &= \exp(-s/2)\\
+\sigma^2_s &= 1-\alpha_s^2
 \end{aligned}
 \right.
 $$
 for isotropic Gaussian noise term $\bfn \sim \pi_{\ref} = \normal(0,I)$. 
 
+* <span style='color:blue'>**Crucial:**</span> $X_t$ can be simulated without Euler scheme!
+
 * The marginal distribution at time $0 \leq t \leq T$ is denoted as
 
 $$
-\blue{ X_t \sim p_t(dx) }
+\blue{ X_t \sim p_t(dx) \; = \; \int \P(X_t \in dx \mid X_0 = x_0) \, \pi_{\data}(dx_0) }
 $$
 
 ---
@@ -1035,7 +1039,7 @@ $$
 \log p(x_{t+\delta}) \; \approx \; \log p(x_t) \; + \; \nabla \log p(x_t) \cdot (x_{t+\delta} - x_t)
 $$
 
-3. This gives the reverse dynamics!
+3. Algebra gives the reverse dynamics!
 
 ---
 
@@ -1087,7 +1091,7 @@ $$
 
 ### Score $\cS(t,x) = \nabla_x \log p_t(x)$
 
-* We chose a OU as noising process: $\blue{dX_t = - \frac12 X_t \, dt + dW}$ with $X_0 \sim \pi_{\data}(dx)$
+* Noising OU process: $\blue{dX_t = - \frac12 X_t \, dt + dW}$ with $X_0 \sim \pi_{\data}(dx)$
 
 * The reverse dynamics reads
 
@@ -1099,7 +1103,7 @@ $$
 
 * if we knew the score, we could simulate the diffusion backward!
 
-* A number of ML techniques to evaluate the score $\red{\cS(t,x)}$ from data, i.e. how to estimate the gradient of the density if we have a lot of samples from this density. We will concentrate on "denoising score matching"
+* A number of ML techniques to evaluate the score $\red{\cS(t,x)}$ from data, i.e. how to estimate the gradient of the density if we have samples from this density. We will concentrate on "denoising score matching"
 
 * **Remark:** in Statistics, the ["score"](https://en.wikipedia.org/wiki/Fisher_information) often refers to $\nabla_{\red{\theta}} \log p_{\theta}(x)$, be careful!
 
@@ -1109,7 +1113,7 @@ $$
 
 * Score Matching is another approach to estimate the score from data
 * It can be more difficult to "scale" to higher-dimensional examples
-* A number of attempts to scale this approach and can sometimes work very well
+* Several attempts to scale this approach: sometimes works very well
 * Recommended [reading](https://jmlr.org/papers/v6/hyvarinen05a.html):
 
 ![](./data/Hyvarinen.png){.absolute bottom=0% height=50% left=15%}
@@ -1119,9 +1123,15 @@ $$
 
 ### Score estimation
 
-* We need to build an approximation of the score,
+* We need to build an approximation of the score:
 
 $$\cS(t,x) \; = \; \nabla_x \log p_t(x).$$
+
+* Note that generating samples from $p_t(dx)$ is straightforward and does not require solving ODEs or SDEs: it is <span style='color:blue'>**simulation-free**</span>.
+
+$$
+X_t = \alpha_t \, X_0 + \sigma_t \, \bfn
+$$
 
 * $\cS(t,x)$ is often parametrized by a **neural network**, although any parametric function approximator can be used
 
@@ -1135,12 +1145,11 @@ $$
 
 * The transition probabilities of the noising OU process are tractable
 $$
-\P(X_t \in dx \, | \, X_0 = x_0) \; = \; \frac{1}{\cZ_t} \exp\curBK{-\frac{(x - \alpha_t \, x_0)^2}{2 \sigma_t^2}}
-$$
-so that the score can be expressed as
-$$
-\cS(t,x)  = \nabla \log \int  \exp\curBK{-\frac{(x - \alpha_t \, x_0)^2}{2 \sigma_t^2}}
+\begin{align}
+\P(X_t \in dx \, | \, X_0 = x_0) &= \frac{1}{\cZ_t} \int \exp\curBK{-\frac{(x - \alpha_t \, x_0)^2}{2 \sigma_t^2}} \, \pi_{\data}(d x_0)\\
+\cS(t,x)  &= \nabla \log \int  \exp\curBK{-\frac{(x - \alpha_t \, x_0)^2}{2 \sigma_t^2}}
 \; \pi_{\data}(d x_0)
+\end{align}
 $$
 
 * From algebra it follows:
@@ -1150,8 +1159,29 @@ $$
 * One can recognize a <span style='color:blue'>**conditional expectation**</span>:
 
 $$
-\cS(t,x) \; = \; -\E\sqBK{  \frac{(x - \alpha_t \, X_0)}{\sigma_t^2} \mid X_t=x}
+\cS(t,x) \; = \; -\E\sqBK{  \blue{ \frac{(x - \alpha_t \, X_0)}{\sigma_t^2}} \mid X_t=x}
 $$
+
+---
+
+#### Conditional Expectation and Regression:
+
+* Consider $(X,Y) \in \bbR^{d_X} \times \bbR^{d_Y}$: the conditional expectation $F_\star(x) = \E[Y \mid X=x]$ is the function $F_\star: \bbR^{d_X} \to \bbR^{d_Y}$ that minimizes
+
+$$
+\E\sqBK{ \left\| Y - F(X) \right\|^2}
+$$
+
+* To approximate the conditional expectation function, minimize
+
+$$
+\theta \; \mapsto \; \E\sqBK{ \left\| Y - F_\theta(X) \right\|^2} \approx \frac{1}{N} \sum_{i=1}^N \left\| y_i - F_\theta(x_i) \right\|^2
+$$
+
+::: {style="text-align:center;"}
+![](./data/neural_net.png){height=250}
+:::
+
 ---
 
 ### Building a sampler from a denoiser
@@ -1160,12 +1190,12 @@ $$
 $$
 \cS(t,x) \; = \; \nabla_x \log p_t(x) \; = \; -\frac{x - \alpha_t \, \red{\widehat{x}_0(t,x)} }{\sigma_t^2}
 $$
-where $\red{\widehat{x}_0(t,x)}$ is a "denoising" estimate of $x_0$ given $X_t=x$:
+where $\red{\widehat{x}_0(t,x)}$ is an estimate of $X_0$ given $X_t=x$:
 $$
 \red{ \widehat{x}_0(t,x) \; = \; \E[X_0  \; \mid \; X_t = x].}
 $$
 
-* To estimate the score, we need to build a <span style='color:blue'>denoiser</span>
+* To estimate the score, we need to build a <span style='color:blue'>**denoiser**</span>:
 
 
 $$
@@ -1173,19 +1203,18 @@ $$
 $$
 
 * Building $\widehat{x}_0(t,x)$ is a "simple" <span style='color:blue'>regression problem</span>.
-* Important take away: <span style='color:blue'>one can build a sampler out of a denoiser!</span>
+* <span style='color:blue'>**Important take away:**</span> one can build a sampler out of a denoiser!
 
 ---
 
-### Regressions...
+* Building a sampler out of a denoiser: if one knows how to approximately compute expectation with respect to a target density $\pi(dx)$, one can generate approximate samples from $\pi(dx)$
 
-* <span style='color:blue'>**Exercise 1:**</span> given a pair of random variables $(X,Y) \in \bbR^{d_X} \times \bbR^{d_Y}$, what is the function $\cD_\star:\bbR^{d_Y} \to \bbR^{d_X}$ that minimizes
+* Related to the idea of <span style='color:blue'>"stochastic localization"</span> that is actively investigated by several communities nowadays
 
-$$\E\BK{\|X - \cD(Y)\|^2} \qquad ?$$
+::: {style="text-align:center;"}
+![](./data/stoch_loc.png){width=800}
+:::
 
-* <span style='color:blue'>**Exercise 2:**</span> Suppose one can generate as many realizations $(x_i, y_i)$ on the random variable $(X,Y)$: How can one construct at approximation of the function $\cD_{\star}$ ?
-
-![](./data/neural_net.png){.absolute bottom=0% height=40% left=30%}
 
 
 ---
@@ -1204,32 +1233,12 @@ x_0 \sim \pi_{\data}(dx)
 x_t = \alpha_t \, x_0 + \sigma_t \, \bfn
 $$
 
-* Parametrize $\widehat{x}_0(t,x)$ with a neural-net with <span style='color:red'>parameter $\theta$</span> and minimize
+* Parametrize $\widehat{x}_0: [0,T] \times \bbR^d \to \bbR^d$ with a neural-net and minimize
 
 $$
-\cL( \red{\theta} ) \equiv \E \curBK{ \int_{t=0}^T \, \lambda(t) \, \left\| X_0 - \widehat{x}_0(\tau, X_{t}) \right\|^2 \, dt}
+\cL( \theta ) \equiv \E \curBK{ \int_{t=0}^T \, \lambda(t) \, \left\| X_0 - \widehat{x}_0(\tau, X_{t}) \right\|^2 \, dt}
 $$
-
 for some weighting function $\lambda(t)$.
-
-
-
----
-
-### Neural Net architecture
-
-$$
-\blue{ \widehat{x}_0(t,x) \; = \; \E[X_0  \; \mid \; X_t = x].}
-$$
-
-* Function of $(x,t)$
-
-* Can be useful to include "Fourier features"
-
-* For images, convolutional layers, etc...
-
-![](./data/neural_net.png){.absolute bottom=0% height=40% left=30%}
-
 
 
 ---
@@ -1252,6 +1261,55 @@ $$
 
 ---
 
+### Other parametrization
+
+* Common implementation: use a neural network to estimate the noise instead!
+
+$$
+\begin{align}
+x
+&= \E[ \alpha_t \, X_0 + \sigma_t \, \bfn \mid X_t = x]\\
+&= \alpha_t \, \blue{\widehat{x}_0(t,x)} + \sigma_t \, \green{\widehat{\bfn}(t,x)}
+\end{align}
+$$
+
+where $\widehat{\bfn}(t,x) = \E[\bfn \mid X_t = x]$.
+
+* Estimating $X_0$ or the noise term $\bfn$ is equivalent
+
+$$
+\begin{align}
+\cS(t,x) 
+&= -\frac{x - \alpha_t \, \blue{\widehat{x}_0(t,x)}}{\sigma^2_t}
+= -\frac{\green{\widehat{\bfn}(t,x)}}{\sigma_t}
+\end{align}
+$$
+
+
+---
+
+### Neural Net architecture
+
+$$
+\blue{ \widehat{x}_0(t,x) \; = \; \E[X_0  \; \mid \; X_t = x].}
+$$
+
+* Denoiser: $\blue{ \widehat{x}_0: [0,T] \times \bbR^d \to \bbR^d }$
+
+* Can be useful to include "Fourier features"
+
+* For images: convolutional layers, U-net, etc..
+
+* For molecules: graph neural networks, etc...
+
+* Physics: include physical constraints, specialized architectures
+
+::: {style="text-align:center;"}
+![](./data/unet.jpg){height=250}
+:::
+
+---
+
 #### The ODE-Diffusion trick
 
 * Diffusion $\blue{dX = \mu(t,X) \, dt + dB}$ with marginal $X_t \sim p_t$
@@ -1260,23 +1318,19 @@ $$
 \partial_t p_t = -\nabla \cdot (\mu \, p_t) + \frac12 \, \Delta p_t
 $$
 
-* Differential Equation $\blue{dX^{\textrm{ODE}}_t = F(t,X^{\textrm{ODE}}_t) \, dt}$ with marginal $X^{\textrm{ODE}}_t \sim p^{\textrm{ODE}}_t$
+* Differential Equation $\blue{dX^{\textrm{ODE}}_t = \vec{F}(t,X^{\textrm{ODE}}_t) \, dt}$ with marginal $X^{\textrm{ODE}}_t \sim p^{\textrm{ODE}}_t$
 
 $$
-\partial_t p^{\textrm{ODE}}_t = -\nabla \cdot ( F \, p^{\textrm{ODE}}_t).
+\partial_t p^{\textrm{ODE}}_t = -\nabla \cdot ( p^{\textrm{ODE}}_t \, \vec{F}).
 $$
 
-* Can one find a vector field $F(t,x)$ such that
+* Can one find $\vec{F}(t,x)$ such that $\red{p_t(x) = p_t^{\text{ODE}}(x)}$ for all times?
+
+
+* Yes: It suffices to take:
 
 $$
-p_t(x) = p_t^{\text{ODE}}(x)
-\qquad \textrm{for all times?}
-$$
-
-* Yes! It suffices to take:
-
-$$
-\red{F(t,x) = \mu(t,x)  - \frac12 \, \nabla_x \log p_t(x)}
+\red{\vec{F}(t,x) = \mu(t,x)  - \frac12 \, \nabla_x \log p_t(x)}
 $$
 
 ---
@@ -1285,7 +1339,7 @@ $$
 
 * Brownian motion dynamics: 
 
-$$$\blue{dX = dW}$$
+$$\blue{dX = dW}$$
 
 * ODE with same marginals:
 
@@ -1309,11 +1363,11 @@ $$\blue{dX_t = -\frac12 \, X_t \, dt \, + \, dW}$$
 
 * Reverse Diffusion: 
 
-$$\blue{dX^{\rev}_s = \frac12 \, X^{\rev}_s \, ds \; + \nabla \log p_{T-s}(X^{\rev}_s) \, ds \; + \;  \, dB}$$
+$$dX^{\rev}_s = \blue{\frac12 \, X^{\rev}_s \, ds \; + \nabla \log p_{T-s}(X^{\rev}_s) \, ds} \; + \;  \green{dB}$$
 
 * Reverse ODE:
 
-$$\blue{dX^{\rev}_s = \frac12 \, X^{\rev}_s \, ds \; + \red{\frac12} \, \nabla \log p_{T-s}(X^{\rev}_s) \, ds }$$
+$$dX^{\rev}_s = \blue{\frac12 \, X^{\rev}_s \, ds \; + \red{\frac12} \, \nabla \log p_{T-s}(X^{\rev}_s) \, ds }$$
 
 ---
 
@@ -1339,7 +1393,7 @@ $$\blue{dX^{\rev}_s = \frac12 \, X^{\rev}_s \, ds \; + \red{\frac12} \, \nabla \
 * How to estimate the likelihood of a new sample $x$?
 * More generally, given an ODE 
 $$
-dX_t = F(t,X_t) \, dt
+dX_t = \vec{F}(t,X_t) \, dt
 $$
 starting from an initial distribution $p_0(dx)$, how can one compute $p_T(x)$?
 * The Chain-Rule and the Fokker-Planck equation gives
@@ -1347,10 +1401,36 @@ starting from an initial distribution $p_0(dx)$, how can one compute $p_T(x)$?
 $$
 \log p_T(x_T)
 \; = \;
-\log p_0(x_0) \; - \; \int_0^T \nabla \cdot F(t,x_t) \, dt
+\log p_0(x_0) \; - \; \int_0^T \blue{\nabla \cdot \vec{F}(t,x_t)} \, dt
 $$
 
 * **caveat:** in high-dimensions, the divergence term can expensive to compute...
+
+
+---
+
+### Hutchinson estimator
+
+* Estimatation of the trace of $M \in \mathbb{R}^{D,D}$ for $D \gg 1$
+* Unbiased estimate of the trace:
+
+$$
+\tr(M) \; = \; \E \curBK{ \bra{\epsilon, M \, \epsilon}}
+$$
+
+where $\epsilon$ is a random vector with $\cov(\epsilon) = \mathbf{1} \in \mathbb{R}^{D,D}$
+
+* Estimator of the divergence $\nabla \cdot F = \tr( J_F)$ with jacobian vector products
+
+$$
+\blue{
+\nabla \cdot \vec{F}(x) \; \approx \;
+\frac{1}{N} \sum_{i=1}^N \bra{\epsilon_i, J_F(x) \, \epsilon_i}
+}
+$$
+
+where $\epsilon_i$ are iid samples from $\normal(0,I)$
+
 
 ---
 
