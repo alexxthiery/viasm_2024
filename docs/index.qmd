@@ -753,7 +753,7 @@ $$
 * **Challenge**:
   * the family $q_{\lambda}(dx)$ should be flexible enough to capture the data distribution
   * we should be able to sample from $q_{\lambda}(dx)$
-  * bonus: ability to compute likelihoods
+  * **Bonus:** ability to compute likelihoods
 ---
 
 #### Why would we want to do this?
@@ -770,18 +770,18 @@ $$
 #### Generative modeling: normalizing flow methods
 
 * Distribution $q_\lambda(dx)$ is obtained by applying a differentiable transformation $T_\lambda: \mathbb{R}^D \to \mathbb{R}^D$ to a simple reference distribution $\pi_{\text{ref}}$.
-* The reference distribution is often chosen as a standard Gaussian distribution $\pi_{\text{ref}} = \normal(0,I)$.
+* Reference distribution often chosen as a standard Gaussian: $\pi_{\text{ref}} = \normal(0,I)$.
 
-* Sample $\blue{X \sim q_\lambda}(dx)$ by generating $\green{Z \sim \pi_{\text{ref}}(dz)}$ and applying $T_\lambda$:
+* To sample $\blue{X \sim q_\lambda}(dx)$: generate $\green{Z \sim \pi_{\text{ref}}(dz)}$ and apply $T_\lambda$:
 
 $$
 \begin{aligned}
-\blue{X} \; &= \; T_\lambda(\green{Z}) \\
+\blue{X} \; &= \; T_\lambda(\green{Z}) \qquad \textrm{where} \qquad \green{Z \sim \pi_{\text{ref}}}\\
 \blue{q_{\lambda}} \; &= \; (T_{\lambda} )_{\sharp} ( \green{\pi_{\text{ref}}} )
 \end{aligned}
 $$
 
-* For $\blue{x} = T_\lambda(\green{z})$, we have:
+* For $\blue{x} = T_\lambda(\green{z})$, the density $q_\lambda$ reads:
 
 $$
 q_\lambda(\blue{x}) = \pi_{\text{ref}}(\green{z}) \, \times \, \left| \text{Jac}(T_\lambda)(\green{z}) \right|^{-1}
@@ -796,11 +796,25 @@ $$
 Z \to Z_1 \to Z_2 \to \ldots \to Z_K \to X
 $$
 
-* Still a an active [area of research](https://github.com/janosh/awesome-normalizing-flows)
-
 ::: {style="text-align:center;"}
 ![Animation below by Eric Jang](./data/normalizing_flow.gif){width=600}
 :::
+
+---
+
+#### (incomplete) history of normalizing flows
+
+::: {style="text-align:center;"}
+![](./data/density_estimation_eric.jpg){width=1000}
+:::
+
+::: {style="text-align:center;"}
+![](./data/variational_inference_rezende.jpg){width=1000}
+:::
+
+* Still a an active [area of research](https://github.com/janosh/awesome-normalizing-flows)
+
+
 ---
 
 #### Fitting a normalizing flow model:
@@ -812,7 +826,7 @@ $$
 \argmax_\lambda \; \frac{1}{N} \, \sum_{i=1}^N \log q_\lambda(x_i)
 $$
 
-* Can be used for VI:
+* Can be used to approximate an unormalized distribution:
 
 $$
 \lambda_{\textrm{VI}} \; = \;
@@ -826,6 +840,48 @@ $$
   * How to ensure that the inverse of $T_\lambda$ is easy to compute?
   * How to ensure that the Jacobian is easy to compute?
 
+---
+
+::: {style="text-align:center;"}
+![](./data/neural_ODE.jpg){height=200}
+:::
+
+* Normalizing flow: $Z \to Z_1 \to Z_2 \to \ldots \to Z_K \to X$
+
+* What about the continuous limit: ["Neural Ordinary Differential Equation"](https://arxiv.org/abs/1806.07366)
+
+$$
+\frac{dX}{dt} = \blue{\mu_{\lambda}(t,X)} \qquad \textrm{with} \qquad
+X_0 \sim \pi_{\text{ref}}(dx)
+$$
+
+::: {style="text-align:center;"}
+![](./data/neural_ODE_field.jpg){height=300}
+:::
+
+---
+
+* Neural Ordinary Differential Equation:
+
+$$
+\frac{dX}{dt} = \blue{\mu_{\lambda}(t,X)} \qquad \textrm{with} \qquad
+X_0 \sim \pi_{\text{ref}}(dx)
+$$
+
+
+* Can be trained with Maximum Likelihood Estimation (MLE)
+
+$$
+\P( X_T \in dx \, | \, X_0 = x_0) \; = \; \textrm{(some formula discussed later)}
+$$
+
+* **Issue**: this typically requires  <span style='color:blue'>solving the ODE</span> at each iteration
+
+* This is too <span style='color:blue'>slow</span> for large datasets, although the idea is very appealing!
+
+::: {style="text-align:center;"}
+![](./data/neural_ODE_results.jpg){height=300}
+:::
 
 
 ---
@@ -833,11 +889,23 @@ $$
 #### Generative modeling: denoising diffusion
 
 * It is difficult to design a family of transformations $T_\lambda$ that are expressive, invertible, have easy-to-compute Jacobians and inverses
+* Neural ODEs are too slow to train because require solving ODEs
 * Instead, design an appropriate drift function $\mu(t,x)$ so that the diffusion
-$$dX = \mu(t,X) \, dt + \sigma \, dW$$
+$$dX = \blue{\mu_{\lambda}(t,X)} \, dt + \sigma \, dW$$
 started from a reference distribution $X_0 \sim \pi_{\text{ref}}(dx)$ generates samples from the data distribution at time $T$.
 
 ![](./data/DDPM_grid.gif){.absolute bottom=0% left=35% width="30%"}
+
+---
+
+::: {style="text-align:center;"}
+![](./data/deep_unsupervised.jpg){width=1000}
+:::
+
+::: {style="text-align:center;"}
+![](./data/deep_unsupervised_examples.jpg){width=1000}
+:::
+
 
 ---
 
