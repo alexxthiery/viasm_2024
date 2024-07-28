@@ -1169,17 +1169,17 @@ $$
 * Consider $(X,Y) \in \bbR^{d_X} \times \bbR^{d_Y}$: the conditional expectation $F_\star(x) = \E[Y \mid X=x]$ is the function $F_\star: \bbR^{d_X} \to \bbR^{d_Y}$ that minimizes
 
 $$
-\E\sqBK{ \left\| Y - F(X) \right\|^2}
+F \; \mapsto \; \E\sqBK{ \left\| Y - F(X) \right\|^2}
 $$
 
-* To approximate the conditional expectation function, minimize
+* To approximate the conditional expectation function, parametrize with a neural network and minimize with stochastic gradient descent:
 
 $$
 \theta \; \mapsto \; \E\sqBK{ \left\| Y - F_\theta(X) \right\|^2} \approx \frac{1}{N} \sum_{i=1}^N \left\| y_i - F_\theta(x_i) \right\|^2
 $$
 
 ::: {style="text-align:center;"}
-![](./data/neural_net.png){height=250}
+![](./data/neural_net.png){height=200}
 :::
 
 ---
@@ -1434,6 +1434,253 @@ where $\epsilon_i$ are iid samples from $\normal(0,I)$
 
 ---
 
+#### Stochastic Interpolant & Flow matching
+
+::: {style="text-align:center;"}
+![](./data/stoch_interpolant_paper.png){width=800}
+:::
+
+::: {style="text-align:center;"}
+![](./data/flow_matching.png){width=800}
+:::
+
+---
+
+* Denoising diffusion: simulation-free method for fitting a diffusion model to htat transforms Gaussian noise into data
+
+* <span style='color:blue'>Stochastic Interpolant:</span> general simulation-free method for fitting a ODE and SDE that transforms an <span style='color:blue'>arbitrary distribution</span> into data.
+
+
+::: {style="text-align:center;"}
+![](./data/stoch_interpolant.jpg){width=800}
+
+SDE and ODE interpolantions from non-Gaussian data
+:::
+
+---
+
+::: {style="text-align:center;"}
+![](./data/stoch_interpolant_non_gaussian.jpg){width=800}
+
+Mapping incomplete images to complete images
+
+Source: ["Stochastic Interpolant with data-dependent couplings"](https://arxiv.org/abs/2310.03725)
+:::
+
+---
+
+* consider two probability distribution $\blue{\pi_0(dx)}$ and $\green{\pi_1(dx)}$
+  * distribution $\blue{\pi_0(dx)}$ is known and easy to sample from
+  * distribution $\green{\pi_1(dx) \equiv \pi_{\data}(dx)}$ is of interest
+
+* Assume that one can generate the pair of random variable $(X_0, \red{C})$ where
+   * $X_0 \sim \blue{\pi_0(dx)}$
+   * quantity $\red{C}$ is "conditionning" random variable
+   * the random variable $X_0$ and $C$ do **not** need to be independent
+
+* One defines $X_t$ for $t \in [0,1]$ as solution of the ODE with drift function $\mu(t,x,\red{c})$:
+
+$$
+dX_t = \mu(t, X_t, \red{C}) \, dt
+$$
+
+* **Requirement:** The marginal distribution of $X_1$ is $\green{\pi_1(dx)}$
+
+$$
+\green{X_1 \sim \pi_1(dx)}
+$$
+
+---
+
+* $(X_0, C)$ where $\red{C = (X_0, X_1)}$ and $X_0 \perp X_1$
+
+$$
+\begin{align}
+\; & \mu(x, x_0, x_1) = x_1-x_0\\
+\; &  dX_t = \red{(X_1 - X_0)} \, dt\\
+\; & X_t = (1-t) \, X_0 + t \, X_1
+\end{align}
+$$
+
+::: {style="text-align:center;"}
+![](./data/straightflow.gif){width=800}
+:::
+
+---
+
+* $(X_0, C)$ where $\red{C = (X_0, X_1, Z)}$ and $X_0 \perp X_1$ and $Z \sim \normal(0,1) \in \bbR^{D}$. For a function $\sigma:[0,1] \to \bbR$ such that $\sigma(0) = \sigma(1) = 0$:
+
+$$
+\begin{align}
+\; & \mu(x, x_0, x_1, z) = (x_1-x_0) + \sigma'(t) \, Z\\
+\; & dX_t = \red{(X_1 - X_0 + \sigma'(t) \, Z)} \, dt\\
+\; & X_t = (1-t) \, X_0 + t \, X_1 + \sigma(t) \, Z
+\end{align}
+$$
+
+::: {style="text-align:center;"}
+![](./data/straightflow_noisy.gif){width=800}
+:::
+
+---
+
+* Let $p_t(dx) = \P(X_t \in dx)$ be the marginal distribution of $X_t$ for $t \in [0,1]$
+* Interpolation between $\blue{\pi_0(dx)}$ and $\green{\pi_1(dx)}$:
+
+$$
+\blue{p_0(dx) \equiv \pi_0(dx)} \qquad \textrm{and} \qquad \green{p_1(dx) \equiv \pi_1(dx)}
+$$
+
+* Not useful as defined since the conditionning variable $C$ depends on $\pi_1(dx)$
+
+* <span style='color:blue'>**Objective:**</span> derive a drift function $\red{\bar{\mu}(t,x)}$ that does **not** depend on $C$ and such that the following ODE has the same marginals
+
+$$
+\red{d \bar{X}_t = \bar{\mu}(t, \bar{X}_t) \, dt}
+$$
+
+* For all time $0 \leq t \leq T$ we have
+
+$$
+\red{\P(\bar{X}_t \in dx) \; = \;  p_t(dx)} \; = \; \P(X_t \in dx)
+$$
+
+
+---
+
+* First order Taylor expansion for test function $\phi$:
+
+$$
+\begin{align}
+\E_{\pi_{t+\delta}}(\phi) &=
+\E[\phi(X_{t+\delta})] \\
+&\approx \E[\phi(X_t) \; + \; \phi'(X_t) \, \blue{\mu(t, X_t, C)} \, \delta]\\
+&= \E[\phi(X_t) \; + \; \phi'(X_t) \, \red{\bar{\mu}(t, X_t)} \, \delta]
+\end{align}
+$$
+
+* This shows that $p_t$ satifies the Fokker-Planck equation:
+
+$$
+\partial_t p_t \; = \; -\nabla \cdot \curBK{ \red{\bar{\mu}(t,x)} \, p_t} 
+$$
+
+* The drift function $\red{\bar{\mu}(t,x)}$ is defined as a <span style='color:blue'>**conditional expectation**</span>:
+
+$$
+\red{\bar{\mu}(t,x) \; = \; \E[\mu(t, x, C) \mid X_t = x]}
+$$
+
+---
+
+### Simulation-free method
+
+* Usual approach: parametrize with a neural net and minimize
+
+$$
+\cL(\theta) \equiv \E \curBK{ \int_{t=0}^T \, \lambda(t) \, 
+\left\| \blue{\mu(t, X_t, C)} \; - \; \red{\bar{\mu}(t,X_t)} \right\|^2 \, dt}
+$$
+
+* The method is <span style='color:blue'>**simulation-free**</span> if one can directly sample $X_t$:
+   * Example 1: $X_t = (1-t) \, X_0 + t \, X_1$
+   * Example 2: $X_t = (1-t) \, X_0 + t \, X_1 + \sigma(t) \, Z$
+
+---
+
+* $(X_0, C)$ where $\red{C = (X_0, X_1)}$ and $X_0 \perp X_1$
+
+$$
+\begin{align}
+\; & \mu(x, x_0, x_1) = x_1-x_0\\
+\; &  dX_t = \red{(X_1 - X_0)} \, dt\\
+\; & X_t = (1-t) \, X_0 + t \, X_1
+\end{align}
+$$
+
+* We have $x = (1-t) \, \widehat{x}_0(t,x) + t \, \widehat{x}_1(t,x)$ so that
+
+$$
+\begin{align}
+\red{\bar{\mu}(t,x)}
+&= \E[X_1 - X_0 \mid X_t = x] \\
+&= \widehat{x}_1(t,x) - \widehat{x}_0(t,x)\\
+&= - \frac{x - \widehat{x}_1(t,x)}{1-t}
+\end{align}
+$$
+
+* Generate data with by sampling $\bar{X}_0 \sim \pi_0(dx)$ and follow the flow:
+
+$$
+d \bar{X}_t = - \frac{\bar{X}_t - \widehat{x}_1(t,\bar{X}_t)}{1-t} \, dt
+$$
+
+---
+
+::: {style="text-align:center;"}
+![](./data/flow_checkboard.mp4){width=800}
+:::
+
+---
+
+::: {style="text-align:center;"}
+![](./data/flow_checkboard_exact_trajectories.png){width=800}
+:::
+
+---
+
+### Flow matching for SDEs
+
+* One defines $X_t$ for $t \in [0,1]$ as solution of the SDE
+
+$$
+dX_t = \mu(t, X_t, \red{C}) \, dt + \sigma(t, \red{C}) \, dW
+$$
+
+* **Requirement:** The marginal distribution of $X_1$ is $\green{\pi_1(dx)}$
+
+$$
+\green{X_1 \sim \pi_1(dx)}
+$$
+
+* Same proof gives that the SDE has the same marginals
+
+$$
+d \bar{X}_t = \red{\bar{\mu}(t, \bar{X}_t)} \, dt + \red{\bar{\sigma}(t)} \, dW
+$$
+
+$$
+\red{\bar{\mu}(t,x) = \E[\mu(t, x, C) \mid X_t = x]}
+\qquad \textrm{and} \qquad
+\red{\bar{\sigma}^2(t) = \E[\sigma^2(t, C) \mid X_t = x]}
+$$
+
+---
+
+* A Brownian Bridge with target $x_\star$ is a Brownian motion conditioned to reach $x_\star$ at time $T=1$. It can be described as
+
+$$
+dX_t = -\frac{(X_t - x_\star)}{1-t} \, dt \; + \; dW
+$$
+
+* Consider: $(X_0, C)$ with $\red{C=X_1}$ where $X_0 \perp X_1$ and dynamics
+
+$$
+\begin{align}
+\; & \mu(t, x, x_1) = -\frac{(x - x_1)}{1-t}\\
+\; & \sigma(t, x_1) = 1\\
+\; & dX_t = \red{-\frac{(X_t - X_1)}{1-t}} \, dt \; + \; dW
+\end{align}
+$$
+
+* The resulting flow-matched SDE reads
+
+$$
+d \bar{X}_t = -\frac{(\bar{X}_t - \red{\widehat{x}_1(t,\bar{X}_t)})}{1-t} \, dt \; + \; dW
+$$
+
+---
+
 ### Bayesian Inverse Problems
 
 * $X \in \bbR^{D_x}$ an object of interest
@@ -1572,7 +1819,7 @@ $$
 
 * Recall that <span style='color:blue'>$p_t(x)$ is obtained by diffusing $p_0 \equiv \pi_{\data}$ on $[0;t]$.</span>
 
-* How to generate samples **conditioned** on an observation $Y$ In other words, assume a noisy observation $Y$ such as
+* How to generate samples **conditioned** on an observation $Y$. In other words, assume a noisy observation $Y$ such as
 $$Y = \Phi(X) + \text{(noise)}$$
 and assume a (smoothed version) of $\pi_{\data}$ is used as prior: How to simulate from the posterior
 
