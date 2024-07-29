@@ -955,13 +955,8 @@ $$
 * Quickly converges towards $\pi_{\ref} = \normal(0,I)$
 * Simple transition densities: the <span style='color:blue'>law of $X_{t+s}$ given that $X_t = x_t$</span> is 
 $$
-X_{t+s} | (X_t=x_t) \; \stackrel{\mathcal{L}}{=} \;\alpha_s x_t + \sigma_s \, \bfn \qquad \text{with} \qquad
-\left\{
-\begin{aligned}
-\alpha_s &= \exp(-s/2)\\
-\sigma^2_s &= 1-\alpha_s^2
-\end{aligned}
-\right.
+X_{t+s} | (X_t=x_t) \; \stackrel{\mathcal{L}}{=} \;\alpha_s x_t + \sqrt{1-\alpha_s^2} \, \bfn \qquad \text{with} \qquad
+\alpha_s = \exp(-s/2)
 $$
 for isotropic Gaussian noise term $\bfn \sim \pi_{\ref} = \normal(0,I)$. 
 
@@ -1130,7 +1125,7 @@ $$\cS(t,x) \; = \; \nabla_x \log p_t(x).$$
 * Note that generating samples from $p_t(dx)$ is straightforward and does not require solving ODEs or SDEs: it is <span style='color:blue'>**simulation-free**</span>.
 
 $$
-X_t = \alpha_t \, X_0 + \sigma_t \, \bfn
+X_t = \alpha_t \, X_0 + \sqrt{1-\alpha_t^2} \, \bfn
 $$
 
 * $\cS(t,x)$ is often parametrized by a **neural network**, although any parametric function approximator can be used
@@ -1146,20 +1141,20 @@ $$
 * The transition probabilities of the noising OU process are tractable
 $$
 \begin{align}
-\P(X_t \in dx \, | \, X_0 = x_0) &= \frac{1}{\cZ_t} \int \exp\curBK{-\frac{(x - \alpha_t \, x_0)^2}{2 \sigma_t^2}} \, \pi_{\data}(d x_0)\\
-\cS(t,x)  &= \nabla \log \int  \exp\curBK{-\frac{(x - \alpha_t \, x_0)^2}{2 \sigma_t^2}}
+\P(X_t \in dx \, | \, X_0 = x_0) &= \frac{1}{\cZ_t} \int \exp\curBK{-\frac{(x - \alpha_t \, x_0)^2}{2 (1-\alpha_t^2)}} \, \pi_{\data}(d x_0)\\
+\cS(t,x)  &= \nabla \log \int  \exp\curBK{-\frac{(x - \alpha_t \, x_0)^2}{2 (1-\alpha_t^2)}}
 \; \pi_{\data}(d x_0)
 \end{align}
 $$
 
 * From algebra it follows:
 $$
-\cS(t,x) \; = \; - \frac{ \int \blue{ \frac{(x - \alpha_t \, x_0)}{\sigma_t^2} } \, p(X_t=x, X_0=x_0) \, dx_0}{\int  p(X_t=x, X_0=x_0) \, dx_0}
+\cS(t,x) \; = \; - \frac{ \int \blue{ \frac{(x - \alpha_t \, x_0)}{(1-\alpha_t^2)} } \, p(X_t=x, X_0=x_0) \, dx_0}{\int  p(X_t=x, X_0=x_0) \, dx_0}
 $$
 * One can recognize a <span style='color:blue'>**conditional expectation**</span>:
 
 $$
-\cS(t,x) \; = \; -\E\sqBK{  \blue{ \frac{(x - \alpha_t \, X_0)}{\sigma_t^2}} \mid X_t=x}
+\cS(t,x) \; = \; -\E\sqBK{  \blue{ \frac{(x - \alpha_t \, X_0)}{(1-\alpha_t^2)}} \mid X_t=x}
 $$
 
 ---
@@ -1188,7 +1183,7 @@ $$
 
 * The score can be expressed as:
 $$
-\cS(t,x) \; = \; \nabla_x \log p_t(x) \; = \; -\frac{x - \alpha_t \, \red{\widehat{x}_0(t,x)} }{\sigma_t^2}
+\cS(t,x) \; = \; \nabla_x \log p_t(x) \; = \; -\frac{x - \alpha_t \, \red{\widehat{x}_0(t,x)} }{1-\alpha_t^2}
 $$
 where $\red{\widehat{x}_0(t,x)}$ is an estimate of $X_0$ given $X_t=x$:
 $$
@@ -1230,7 +1225,7 @@ $$
 $$
 x_0 \sim \pi_{\data}(dx)
 \qquad \and \qquad
-x_t = \alpha_t \, x_0 + \sigma_t \, \bfn
+x_t = \alpha_t \, x_0 + \sqrt{1-\alpha_t^2} \, \bfn
 $$
 
 * Parametrize $\widehat{x}_0: [0,T] \times \bbR^d \to \bbR^d$ with a neural-net and minimize
@@ -1246,7 +1241,7 @@ for some weighting function $\lambda(t)$.
 * The score is then defined as
 
 $$
-\cS(t,x) \; = \; -\frac{x - \alpha_t \, \widehat{x}_0(t,x)}{\sigma^2_t}
+\cS(t,x) \; = \; -\frac{x - \alpha_t \, \widehat{x}_0(t,x)}{1-\alpha^2_t}
 \; = \; 
 \nabla \log p_t(x)
 $$
@@ -1268,8 +1263,8 @@ $$
 $$
 \begin{align}
 x
-&= \E[ \alpha_t \, X_0 + \sigma_t \, \bfn \mid X_t = x]\\
-&= \alpha_t \, \blue{\widehat{x}_0(t,x)} + \sigma_t \, \green{\widehat{\bfn}(t,x)}
+&= \E[ \alpha_t \, X_0 + \sqrt{1-\alpha_t^2} \, \bfn \mid X_t = x]\\
+&= \alpha_t \, \blue{\widehat{x}_0(t,x)} + \sqrt{1-\alpha_t^2} \, \green{\widehat{\bfn}(t,x)}
 \end{align}
 $$
 
@@ -1280,8 +1275,8 @@ where $\widehat{\bfn}(t,x) = \E[\bfn \mid X_t = x]$.
 $$
 \begin{align}
 \cS(t,x) 
-&= -\frac{x - \alpha_t \, \blue{\widehat{x}_0(t,x)}}{\sigma^2_t}
-= -\frac{\green{\widehat{\bfn}(t,x)}}{\sigma_t}
+&= -\frac{x - \alpha_t \, \blue{\widehat{x}_0(t,x)}}{1-\alpha^2_t}
+= -\frac{\green{\widehat{\bfn}(t,x)}}{\sqrt{1-\sigma_t^2}}
 \end{align}
 $$
 
