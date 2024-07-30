@@ -1382,6 +1382,14 @@ $$\blue{dX^{\rev}_s = \frac12 \, X^{\rev}_s \, ds \; + \red{\frac12} \, \nabla \
 
 ---
 
+::: {style="text-align:center;"}
+![](./data/interpolation.jpg){width=800}
+
+[Paper (2021): "Score-Based Generative Modeling through Stochastic Differential Equations"](https://arxiv.org/abs/2011.13456)
+:::
+
+---
+
 ### Likelihood estimates
 
 * We have seen how to generate samples from the data distribution
@@ -1426,7 +1434,19 @@ $$
 
 where $\epsilon_i$ are iid samples from $\normal(0,I)$
 
+---
 
+* What neural architecture for the denoiser?
+* SDE or ODE formulation? Mix of both?
+* Noise estimation or $X_0$ estimation?
+* How to discretize the SDE/ODE?
+* Weighting function $\lambda(t)$?
+
+::: {style="text-align:center;"}
+![](./data/design_space.png){width=800}
+
+[NeurIPS 2022 Paper Award](https://arxiv.org/abs/2206.00364)
+:::
 ---
 
 #### Stochastic Interpolant & Flow matching
@@ -1503,19 +1523,44 @@ $$
 
 ---
 
-* $(X_0, C)$ where $\red{C = (X_0, X_1, Z)}$ and $X_0 \perp X_1$ and $Z \sim \normal(0,1) \in \bbR^{D}$. For a function $\sigma:[0,1] \to \bbR$ such that $\sigma(0) = \sigma(1) = 0$:
+* $(X_0, C)$ where $\red{C = (X_0, X_1, Z)}$ and $X_0 \perp X_1$ and $Z \sim \normal(0,1) \in \bbR^{D}$. For a function $\gamma:[0,1] \to \bbR$ such that $\gamma(0) = \gamma(1) = 0$:
 
 $$
 \begin{align}
-\; & \mu(x, x_0, x_1, z) = (x_1-x_0) + \sigma'(t) \, Z\\
-\; & dX_t = \red{(X_1 - X_0 + \sigma'(t) \, Z)} \, dt\\
-\; & X_t = (1-t) \, X_0 + t \, X_1 + \sigma(t) \, Z
+\; & \mu(x, x_0, x_1, z) = (x_1-x_0) + \gamma'(t) \, Z\\
+\; & dX_t = \red{(X_1 - X_0 + \gamma'(t) \, Z)} \, dt\\
+\; & X_t = (1-t) \, X_0 + t \, X_1 + \gamma(t) \, Z
 \end{align}
 $$
 
 ::: {style="text-align:center;"}
 ![](./data/straightflow_noisy.gif){width=800}
 :::
+
+---
+
+#### More general case
+
+* $(X_0, C)$ where $\red{C = (X_0, X_1, Z)}$ with:
+   * $X_0 \sim \blue{\pi_0(dx)}$ and $X_1 \sim \green{\pi_1(dx)}$
+   * $Z \sim \normal(0,1) \in \bbR^{D}$
+   * Do not assume any independence between $X_0$, $X_1$
+* For some function $\alpha(\cdot)$ and $\beta(\cdot)$ and $\gamma$ such that
+
+$$
+\begin{align}
+\alpha(0) &= 1 \qquad \textrm{and} \qquad \alpha(1) = 0\\
+\beta(0) &= 0 \qquad \textrm{and} \qquad \beta(1) = 1
+\end{align}
+$$
+
+* Define the quantity $X_t$ as $\blue{X_t = \alpha(t) \, X_0 + \beta(t) \, X_1 + \gamma(t) \, Z}$
+
+* This is implicitly described by the ODE
+
+$$
+dX_t = \red{ \curBK{\alpha'(t) \, X_0 + \beta'(t) \, X_1 + \gamma'(t) \, Z} } \, dt
+$$
 
 ---
 
@@ -1612,6 +1657,47 @@ $$
 
 ---
 
+### Slightly more general case:
+
+* Interpolation: $\blue{X_t = \alpha(t) \, X_0 + \beta(t) \, X_1 + \gamma(t) \, Z}$
+
+* ODE: $dX_t = \curBK{\alpha'(t) \, X_0 + \beta'(t) \, X_1 + \gamma'(t) \, Z}  \, dt$
+
+* Flow matching:
+
+$$
+d \bar{X}_t = \underbrace{
+\curBK{
+\alpha'(t) \, \red{\widehat{x}_0(t,\bar{X}_t)} \; + \; 
+\beta'(t) \, \red{\widehat{x}_1(t,\bar{X}_t)} \; + \;
+\gamma'(t) \, \red{\widehat{z}(t,\bar{X}_t)}}}_{\red{\bar{\mu}(t,\bar{X}_t)}}  \, dt$$
+
+---
+
+### Estimating the score:
+
+* Interpolation: $\blue{X_t = \alpha(t) \, X_0 + \beta(t) \, X_1 + \gamma(t) \, Z}$
+
+* The marginal at time $0 \leq t \leq 1$ reads:
+
+$$
+p_t(dx) \; = \; \frac{1}{\cZ_t} \int \exp\curBK{-\frac{(x - [\alpha(t) x_0 + \beta(t)])^2}{\gamma(t)^2}} \, \pi(dx_0, dx_1)
+$$
+
+* Algebra gives:
+
+$$
+\blue{\cS(t,x) \; = \; \nabla \log p_t(x) \; = \; -\frac{\widehat{z}(t,x)}{\gamma(t)}}
+$$
+
+* <span style='color:blue'>SDE-ODE trick:</span> for volatility $\sigma > 0$ the following SDE shares the same marginals as the ODE flow
+
+$$
+d \bar{X}_t = \bar{\mu}(t, \bar{X}_t) \, + \, \frac{\sigma^2}{2} \blue{\cS(t,\bar{X}_t) }  dt \; + \; \green{\sigma \, dW}
+$$
+
+---
+
 ::: {style="text-align:center;"}
 ![](./data/flow_checkboard.mp4){width=800}
 :::
@@ -1620,6 +1706,19 @@ $$
 
 ::: {style="text-align:center;"}
 ![](./data/flow_checkboard_exact_trajectories.png){width=800}
+:::
+
+---
+
+* Consider the case $(X_0, C)$ where $C=(X_0, X_1)$
+* Many applications when it is useful to **not** choose $X_0$ and $X_1$ independent
+   * Image denoising: $X_0$ is the noisy image and $X_1$ is the clean image
+    * Image inpainting: $X_0$ is the incomplete image and $X_1$ is the complete image
+
+::: {style="text-align:center;"}
+![](./data/flow_inpainting.jpg){width=600}
+
+Paper: ["Stochastic Interpolants with data-dependent couplings"](https://arxiv.org/abs/2310.03725)
 :::
 
 ---
@@ -1750,19 +1849,11 @@ $$
 
 $$\blue{\pi_{\post}(x) \; = \; \frac{1}{\cZ} \, \pi_{\prior}(x) \, \cL_y(x)}$$
 
-* Maximum A Posteriori:
+* Maximum A Posteriori: $x_{\map} \; = \; \argmax_{x} \pi_{\post}(x)$
 
-$$
-x_{\map} \; = \; \argmax_{x} \pi_{\post}(x) \; = \; \argmax_{x} \log \pi_{\prior}(x) + \log \cL_y(x)
-$$
+* Markov Chain Monte Carlo: a Markov process (eg. Langevin) explores $\pi_{\post}(dx)$
 
-* Markov Chain Monte Carlo: 
-
-$$\text{Run a Markov Chain that explores $\pi_{\post}(dx)$ } $$
-
-* Variational Methods:
-
-$$\lambda \; = \; \argmin_{\lambda} \; \kl\BK{p_{\lambda}, \pi_{\post}}$$
+* Variational Methods: $\argmin_{\lambda} \; \kl\BK{p_{\lambda}, \pi_{\post}}$
 
 
 ---
@@ -1846,10 +1937,16 @@ $$
 $$
 \nabla \log p_t(x_t | Y) = \nabla \log p_t(x_t) 
 \; + \;
+\underbrace{
 \blue{ \nabla \log \P(Y \, | x_t) }
+}_{\text{(difficult to compute)}}
 $$
 
-* The following approximation is often used:
+---
+
+How to obtain the term: $\blue{ \nabla \log \P(Y \, | x_t) }$
+
+* Naive approximation: $\P( x_0 \, | x_t) \; \approx \; \delta(\widehat{x}_0(t, x_t))$
 
 $$
 \begin{align}
@@ -1858,15 +1955,79 @@ $$
 \int \P(Y, x_0 \, | x_t) \, dx_0
 =
 \int \P(Y | x_0) \, \P( x_0 \, | x_t) \, dx_0 \\
-& \approx \P(\, Y | \widehat{x}_0(x_t) \,)
+& \approx \P(\, Y | \widehat{x}_0(t, x_t) \,)
 \end{align}
+$$
+
+* Better approximation: $\P( x_0 \, | x_t) \; \approx \; \blue{\widehat{\P( x_0 \, | x_t)}}$
+$$
+\P(Y \, | x_t) 
+=
+\int \P(Y | x_0) \, \P( x_0 \, | x_t) \, dx_0 \\
+\approx 
+\int \P(Y | x_0) \, \blue{ \widehat{\P( x_0 \, | x_t)} } \, dx_0 
 $$
 
 ---
 
+#### Classifier guidance
+
+* Consider a large dataset of labeled samples $\{x_i, y_i\}_{i=1}^{N}$. Objective is to create new samples **conditioned** on a given label $y_\star$
+* One can train a standard diffusion model on $\{x_i\}_{i=1}^N$
+
 $$
-dX^{\rev}_s = \frac12 \, X^{\rev}_s \, ds \; + \red{ \nabla \log p_{T-s}(X^{\rev}_s) \, ds} \; + \;  \blue{\nabla \log \P(\, Y | \widehat{x}_0(x_t) \,)} \, + dB.
+dX_t = \frac12 \, X_t \, dt \; + \; \nabla \log p_t(X_t) \, dt \; + \; dB
 $$
 
-![](./data/infill.gif){.absolute bottom=0% height=70% left=25%}
+* To generate samples conditioned on a given label $y_\star$
 
+$$
+dX_t = \frac12 \, X_t \, dt \; + \; \nabla \log p_t(X_t) \, dt \; + \,  \blue{\nabla \log \P(y_\star \mid X_t)}\; + \; \; dB
+$$
+
+* Train a <span style='color:blue'>new classifier</span> to estimate the term $\blue{\nabla \log \P(y_\star \mid X_t)}$
+
+---
+
+::: {style="text-align:center;"}
+![](./data/conditional_generation.jpg){width=800}
+
+[Paper (2021): "Score-Based Generative Modeling through Stochastic Differential Equations"](https://arxiv.org/abs/2011.13456)
+:::
+
+---
+
+#### Classifier-free guidance
+
+* Consider a large dataset of labeled samples $\{x_i, y_i\}_{i=1}^{N}$.
+* Instead of training a generative model as well as an additional classifier, one can directly train a generative model on the labeled dataset, i.e. <span style='color:blue'>**no classifier**</span>
+
+* Standard score estimate with denoising diffusion:
+
+$$
+\nabla \log p_t(x) = -\frac{x - \alpha_t \, \widehat{x}_0(t,x)}{1-\alpha_t^2}
+$$
+
+* Same with labeled data: estimate $X_0$ given $X_t$ and the associated label $y$:
+
+$$
+\nabla \log p_t(x \mid \red{y}) = -\frac{x - \alpha_t \, \widehat{x}_0(t,x, \red{y})}{1-\alpha_t^2}
+$$
+
+---
+
+* Text embedding + Classifier-free guidance + Tricks
+
+::: {style="text-align:center;"}
+![](./data/text-to-img.jpg){width=800}
+
+[Paper (2022): "Photorealistic Text-to-Image Diffusion Models with Deep Language Understanding"](https://arxiv.org/abs/2205.11487)
+:::
+
+---
+
+::: {style="text-align:center;"}
+![](./data/infill.gif){width=600}
+
+Thank You!
+:::
