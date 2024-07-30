@@ -23,32 +23,6 @@ css: style.css
 [//]: # INCLUDE LATEX MACROS
 {{< include /macros/_macros.qmd >}}
 
-
----
-
-::: {style="text-align:center;"}
-Slides and Code:
-
-![](./data/slides_url.png){width=500}
-
-[https://github.com/alexxthiery/viasm_2024](https://github.com/alexxthiery/viasm_2024)
-:::
-
-
----
-
-## PhD scholarships available....
-
-* NUS PhD program in Statistics & Data Science
-* A number of scholarships available
-* Come have a chat if interested!
-
-![](./data/nus-campus.png){.absolute bottom=0% left=10% width="80%"}
-
-
-
----
-
 ## Course objectives
 
 1. What are flows and diffusion models?
